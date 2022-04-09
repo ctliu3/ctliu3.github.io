@@ -1,0 +1,298 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Space of ctliu3</title><link>http://example.org/</link><description>Recent content on Space of ctliu3</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Sun, 16 Apr 2017 09:19:22 +0000</lastBuildDate><atom:link href="http://example.org/index.xml" rel="self" type="application/rss+xml"/><item><title>Implement style transfer in Pytorch</title><link>http://example.org/posts/implement-style-transfer-in-pytorch/</link><pubDate>Sun, 16 Apr 2017 09:19:22 +0000</pubDate><guid>http://example.org/posts/implement-style-transfer-in-pytorch/</guid><description>Space of ctliu3 http://example.org/posts/implement-style-transfer-in-pytorch/ -&lt;p>Prisma 在去年异常火爆，它能将艺术图片（如梵高的「星空」）与任意图片融合，生成一张同时带有两者风格的图片。专业点的说法，这叫 Style transfer（风格迁移）。其实第一篇风格化相关的文章 2015 年就有了，但由于它把训练和预测放一起了，导致无法做到实时。当然，这个问题后面几个月就被解决了，也就有了再后来的 Prisma。在这篇文章里，只介绍 style transfer 的主要思路，Pytorch 实现的代码可以查看&lt;a href="https://github.com/ctliu3/neural-style">这里&lt;/a>。&lt;/p>
+&lt;h3 id="style-transfer">Style Transfer&lt;/h3>
+&lt;p>对于一个图像分类网络，输入是图像，输出是该图像属于每个类别的概率。而训练风格迁移，输入是艺术图和待风格化的图，输出是两者的融合，即风格化后的图。虽然我拿它跟图像分类作对比，但除了都使用 CNN 来提取特征，它们并不具有可比性。具体流程可以看下面的流程图&lt;/p>
+&lt;figure>&lt;img src="http://example.org/Implement-style-transfer-in-Pytorch/neural-style-flow.jpg"
+alt="风格迁移流程图"/>&lt;figcaption>
+&lt;p>风格迁移流程图&lt;/p>
+&lt;/figcaption>
+&lt;/figure>
+&lt;ul>
+&lt;li>风络迁移网络[1]使用中间层的 feature map 来计算 loss。如果想让保留更多原图的信息，靠近输入的层可以设置较高的权重。论文中使用的是 &lt;code>vgg19&lt;/code>，全连接层不需要用到。&lt;/li>
+&lt;li>使用的网络是在 imagenet 等数据集上预训练好的，网络的参数在风格化训练过程中并不更新，而是更新上图中的输入 &lt;code>X&lt;/code>. &lt;code>X&lt;/code> 是一幅初始图片，每一次反向传播都会更改 &lt;code>X&lt;/code> 的像素值。为了让训练更快、更好地逼进解，可以使用待风格化的图片作为初始图片。这种利用 image graident 来更新原图的方式也可以用来生成 &lt;a href="http://karpathy.github.io/2015/03/30/breaking-convnets/">fool image&lt;/a>。&lt;/li>
+&lt;li>Loss 的计算上，&lt;code>X&lt;/code> 与艺术图和原图的 loss 上有些区别。我没实验过，但只与原图的高层特征求 loss，应该是为了让结果更接近艺术图。加上如果使用原始图片作为初始 &lt;code>X&lt;/code> 的话，只对高层特征求 loss 确实是合理的。&lt;/li>
+&lt;/ul>
+&lt;h3 id="make-it-faster">Make it faster&lt;/h3>
+&lt;p>每个图像都要经过多轮迭代才能得到风格化的图片，这种方法显然实用性不强。为了解决这个问题，[2] 修改了原来的训练流程：使用两个网络，一个网络用来学习风格化的参数，我们把它称为 &lt;code>image transform net&lt;/code>，一个网络用来计算 loss，我们称之为 &lt;code>loss net&lt;/code>。&lt;code>loss net&lt;/code> 主要用来计算损失，因此不更新参数。&lt;code>image transform net&lt;/code> 的输出即是最后风格化后的图。[2] 使用了如下的网络结构&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f0f3f3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#069;font-weight:bold">class&lt;/span> &lt;span style="color:#0a8;font-weight:bold">ImageTransformNet&lt;/span>(nn&lt;span style="color:#555">.&lt;/span>Module):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#069;font-weight:bold">def&lt;/span> &lt;span style="color:#c0f">forward&lt;/span>(self, x):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> F&lt;span style="color:#555">.&lt;/span>relu(self&lt;span style="color:#555">.&lt;/span>bn1(self&lt;span style="color:#555">.&lt;/span>conv1(x)))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> F&lt;span style="color:#555">.&lt;/span>relu(self&lt;span style="color:#555">.&lt;/span>bn2(self&lt;span style="color:#555">.&lt;/span>conv2(x)))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> F&lt;span style="color:#555">.&lt;/span>relu(self&lt;span style="color:#555">.&lt;/span>bn3(self&lt;span style="color:#555">.&lt;/span>conv3(x)))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> self&lt;span style="color:#555">.&lt;/span>res1(x) &lt;span style="color:#09f;font-style:italic"># residual block&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> self&lt;span style="color:#555">.&lt;/span>res2(x)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> self&lt;span style="color:#555">.&lt;/span>res3(x)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> self&lt;span style="color:#555">.&lt;/span>res4(x)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> self&lt;span style="color:#555">.&lt;/span>res5(x)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> F&lt;span style="color:#555">.&lt;/span>relu(self&lt;span style="color:#555">.&lt;/span>bn4(self&lt;span style="color:#555">.&lt;/span>conv4(x)))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> F&lt;span style="color:#555">.&lt;/span>relu(self&lt;span style="color:#555">.&lt;/span>bn5(self&lt;span style="color:#555">.&lt;/span>conv5(x)))
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> x &lt;span style="color:#555">=&lt;/span> self&lt;span style="color:#555">.&lt;/span>conv6(x)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#069;font-weight:bold">return&lt;/span> x
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="experience-with-pytorch">Experience with Pytorch&lt;/h3>
+&lt;p>其实写这个项目的主要一个原因是为了熟悉 Pytorch。这很大程度源于看了 Andrej Karpathy 的一句&lt;a href="https://twitter.com/PyTorch/status/829539819709624321/photo/1">推文&lt;/a>。
+为了吸引更多的人使用，不管是 pytorch 还是 Caffe, MXNet 等框架都在极力降低入坑的门槛，更简洁的 API，更丰富的预训练好的模型。以致发展到现在，各家的接口，在某种程度上说，长得都差不多，特别是 python 的接口。因此到最后，还是回归到架构的设计上，哪个更为灵活，使用的显存更少，更好的支持分布式训练等等。从这段时间的使用情况来看，pytorch&lt;/p>
+&lt;ul>
+&lt;li>社区并不活跃，&lt;a href="https://discuss.pytorch.org/">discuss&lt;/a> 上的帖子并不多，回复得比较积极的似乎总是那几个人。&lt;/li>
+&lt;li>接口非常易用，文档相比于 Caffe, MXNet 也算完善，但离 Tensorflow 还有些距离。不过一般的问题跟跟源码或是在论坛上基本都能找到解答。&lt;/li>
+&lt;li>官方主打的动态图模型。我没在其它框架上写过定制化特别强的复杂网络，因此不好比较。在使用 pytorch 过程中，我确实感觉到了一些便利：定义新的 layer/loss，在 forward 过程中随意的把中间结果拿出来，放在其他网络中。&lt;/li>
+&lt;/ul>
+&lt;h3 id="reference">Reference&lt;/h3>
+&lt;p>&lt;a href="http://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf">[1]&lt;/a>: Gatys L A, Ecker A S, Bethge M, Image Style Transfer Using Convolutional Neural Networks, CVPR 2016&lt;/p>
+&lt;p>&lt;a href="https://arxiv.org/abs/1603.08155">[2]&lt;/a>: Johnson J, Alahi A, Fei-Fei L., Perceptual Losses for Real-Time Style Transfer and Super-Resolution, ECCV 2016&lt;/p>- http://example.org/posts/implement-style-transfer-in-pytorch/ -</description></item><item><title>Rate Limiter</title><link>http://example.org/posts/rate-limiter/</link><pubDate>Sat, 03 Dec 2016 10:52:19 +0000</pubDate><guid>http://example.org/posts/rate-limiter/</guid><description>Space of ctliu3 http://example.org/posts/rate-limiter/ -&lt;p>I dig into rate limiter these days. Rate limiter is a tool that limits the number of request in a given short period. Any service only can handle limited requests with limited resources (cpu, memory, etc). Rate limiter prevents service to reach a high load that beyond its load capacity.&lt;/p>
+&lt;p>Generally, rate limiter can be implemented using leaky bucket or token bucket algorithms. The main difference between them is the rate accepting a request. The word &amp;ldquo;bucket&amp;rdquo; is really imagery word that can help you catch the idea of the algorithms.&lt;/p>
+&lt;p>For leaky bucket algorithm, the time gap between any two adjacent requests should be greater than a fixed value. Therefore, if there comes huge requests in a short period, the requests will through the service one by one, no burstiness happens. However, the burstiness occurs in token bucket algorithm. Before passing the limiter, request should check if there is enough tokens left. If there is, then the request is accepted. The tokens will be refilled in a given period. If many requests get the tokens at almost the same time, then burstiness takes place.&lt;/p>
+&lt;p>For a full-featured rate limiter, following points should be considered:&lt;/p>
+&lt;ul>
+&lt;li>Multiple request at a time. The requests are packed into batch, they should be handled simultaneously.&lt;/li>
+&lt;li>Multiple buckets. Each bucket is used for a namespace, such as user id or host.&lt;/li>
+&lt;li>Heterogeneous request type. You need different limiter to handle different type of requests.&lt;/li>
+&lt;li>Dynamic configuration. Reconfigure the limiter without restarting it.&lt;/li>
+&lt;li>Make it distributed. Multiple same service use a central limiter. But this will make the limiter a little bit heavy and I don&amp;rsquo;t recommend this in some degree.&lt;/li>
+&lt;li>etc&amp;hellip;&lt;/li>
+&lt;/ul>
+&lt;p>In &lt;a href="https://github.com/ctliu3/tap">tap&lt;/a>, which is a project in github, I implement the above two algorithms of rate limiter using golang. Also, I also extend the rate limiter to a distributed version, backend with redis. This project is a good start to understand rate limiter, but it&amp;rsquo;s still an experimental project, be careful if you want to use it in production environment. I don&amp;rsquo;t suppose to get into details about the tap because it&amp;rsquo;s not completed finished, you can take a glance on the codes.&lt;/p>- http://example.org/posts/rate-limiter/ -</description></item><item><title>参数服务器</title><link>http://example.org/posts/parameter-server/</link><pubDate>Sat, 12 Nov 2016 15:20:32 +0000</pubDate><guid>http://example.org/posts/parameter-server/</guid><description>Space of ctliu3 http://example.org/posts/parameter-server/ -&lt;p>参数服务器（Parameter Sever）是大规模机器学习的一个部分，比如 dmlc 中的 &lt;a href="https://github.com/dmlc/ps-lite">ps-lite&lt;/a>, 比如微软的 &lt;a href="https://www.google.com/url?sa=t&amp;amp;rct=j&amp;amp;q=&amp;amp;esrc=s&amp;amp;source=web&amp;amp;cd=1&amp;amp;cad=rja&amp;amp;uact=8&amp;amp;ved=0ahUKEwiiqp-RiaPQAhUDsI8KHZnNDBMQFgggMAA&amp;amp;url=https%3A%2F%2Fpdfs.semanticscholar.org%2F043a%2Ffbd936c95d0e33c4a391365893bd4102f1a7.pdf&amp;amp;usg=AFQjCNFFnirPzFhPQQ4KTeDH5MX8ff1OEw&amp;amp;sig2=iQsdfQFyUcPhG8kkP9B0-g">project adam&lt;/a>。本质上来，参数服务器就是个分布式系统，用于更新机器学习的模型参数。因此，一个完善的参数服务器要考虑到错误容忍、可扩展性、数据一致性等。&lt;/p>
+&lt;h3 id="基本架构">基本架构&lt;/h3>
+&lt;p>以 ps-lite 为例，ps-lite 从架构上来说是由 server, worker, scheduler 组成，三者的职责如下&lt;/p>
+&lt;ul>
+&lt;li>Sheduler 是个调度器，比如控制训练时的数据同步，对失败结点和新添结点的处理。Sheduler 并不对系统资源使用进行监控和优化分配。&lt;/li>
+&lt;li>Server 主要用于数据（在深度学习中，该数据就是梯度）的收集和模型的更新，server 之间会相互通信，进行数据的备份，防止 server 结点失败。&lt;/li>
+&lt;li>Worker 用于训练模型。Worker 结点之间不进行通信，因此，如果有一个结点失败了，不会影响其他结点的训练。Worker 有两个主要的操作：push 数据到 server, 从 server pull 数据到本地。&lt;/li>
+&lt;/ul>
+&lt;p>代码层面，ps-lite 使用 Postoffice 类作为信息获取和消息通信的统一入口，使用 zeromq 进行消息通信，消息使用 protobuf 进行封装。&lt;/p>
+&lt;h3 id="同步异步">同步、异步&lt;/h3>
+&lt;p>支持同步和异步的训练是参数服务器一个特性。&lt;/p>
+&lt;ul>
+&lt;li>
+&lt;p>同步。直观上来讲，同步就是个 map-reduce 的过程。Server 结点必须等到所有数据都收集完整了，才能进行模型的更新。对于凸优化，同步的训练方式可以保证数据的收敛。但，同步的训练方式对机器的要求比较高，因为如果有一个 worker 结点计算速度过慢，会严重影响训练速度。此外，从实现上而言，同步更容易进行调试。&lt;/p>
+&lt;/li>
+&lt;li>
+&lt;p>异步。每个 worker 结点可以在任何时刻从 server 结点拉取模型数据进行训练。即每个 worker 结点上的模型可能是不一样的。异步的方式从实现上更为简单，因为它只需要保证 server 结点对更新模型操作时的互斥，而不需要处理不同 worker 结点的同步问题。目前，对于大规模的学习任务，基本都会采用异步的训练方式，但并非所有的算法都支持异步的训练。异步通常来讲会降低模型的收敛速度，甚至导致模型不收敛。因此，实现异步训练，要有相应算法的支持。&lt;/p>
+&lt;/li>
+&lt;/ul>
+&lt;p>在 ps-lite 中，可以通过 Barrier() 函数来实现结点间的同步。比如，如果我想在 server 结点初始化好模型前，阻塞所有 worker 结点的 pull 操作。可以在每个 worker 结点加入该操作（具体细节可参考 &lt;a href="https://github.com/ctliu3/dist-lr/blob/master/src/main.cc">dist-lr&lt;/a> 的实现）：&lt;/p>
+&lt;pre>&lt;code>ps::Postoffice::Get()-&amp;gt;Barrier(ps::kWorkerGroup);
+&lt;/code>&lt;/pre>
+&lt;p>此外，ps-lite 也利用时间戳的方式来实现同步训练。每个 worker 结点在给 push 数据给 server 时，都会带上一个时间戳，该时间戳对应一个回调函数。Server 结点的 response 中会带上该时间戳，这样就使得 worker 结点会在 server 返回结果前阻塞，而在收到 response 时执行相应的函数。&lt;/p>
+&lt;h3 id="dist-lrhttpsgithubcomctliu3dist-lr">&lt;a href="https://github.com/ctliu3/dist-lr">dist-lr&lt;/a>&lt;/h3>
+&lt;p>dist-lr 是我基于 ps-lite 写的一个分布式 logistic regression 的项目。目前实现的是带 L2 正则的单机版本，但只要做一些数据拷贝的处理，很容易扩展成多机的版本。支持同步和异步的训练。&lt;/p>
+&lt;p>&lt;a href="https://github.com/ctliu3/dist-lr/tree/master/examples">examples&lt;/a> 目录下放了个 demo，数据集是 &lt;a href="https://www.csie.ntu.edu.tw/~cjlin/libsvmtools/datasets/binary.html">a9a&lt;/a>, 这是一个二分类数据，特征维度为 123, 正样本有 32561 个，负样本有 16281 个。为了测试数据并行的效果，我把训练集分成了 4 份。训练时迭代了 20 次。&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th>&lt;/th>
+&lt;th style="text-align:center">elapsed&lt;/th>
+&lt;th style="text-align:center">accuracy&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td>sync&lt;/td>
+&lt;td style="text-align:center">92s&lt;/td>
+&lt;td style="text-align:center">82.9%&lt;/td>
+&lt;/tr>
+&lt;tr>
+&lt;td>async&lt;/td>
+&lt;td style="text-align:center">69s&lt;/td>
+&lt;td style="text-align:center">80.4%&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>同步训练时，准确率是一直上升的，而异步时，准确率会有比较大的振荡，无法很好的收敛。下面是某一次异步训练时的收敛情况：&lt;/p>
+&lt;pre>&lt;code> 09:51:38 Iteration 20, accuracy: 0.690682
+09:51:46 Iteration 40, accuracy: 0.725201
+09:51:53 Iteration 60, accuracy: 0.845955
+09:52:01 Iteration 80, accuracy: 0.790861
+09:52:08 Iteration 100, accuracy: 0.819114
+09:52:16 Iteration 120, accuracy: 0.776856
+09:52:24 Iteration 140, accuracy: 0.773847
+09:52:31 Iteration 160, accuracy: 0.811498
+09:52:39 Iteration 180, accuracy: 0.836619
+09:52:47 Iteration 200, accuracy: 0.804312
+&lt;/code>&lt;/pre>- http://example.org/posts/parameter-server/ -</description></item><item><title>阿姆斯特丹之行</title><link>http://example.org/posts/days-in-amsterdam/</link><pubDate>Sun, 16 Oct 2016 23:23:37 +0000</pubDate><guid>http://example.org/posts/days-in-amsterdam/</guid><description>Space of ctliu3 http://example.org/posts/days-in-amsterdam/ -&lt;figure>&lt;img src="http://example.org/days-in-amsterdam/amsterdam-canal-view.jpg"
+alt="阴天里的阿姆斯特丹运河"/>&lt;figcaption>
+&lt;p>阴天里的阿姆斯特丹运河&lt;/p>
+&lt;/figcaption>
+&lt;/figure>
+&lt;p>当下火车，踏上阿姆斯特丹的街道时，我看到了以往在屏幕上才会看到的画面：不高但匠心独运的欧式建筑、漂浮着建筑倒影的运河、时停时飞的鸽子。才 8 点多，街上偶尔几个跑步的人，地上不算干净，空气中透着寒气，城市还没完全醒来。&lt;/p>
+&lt;figure>&lt;img src="http://example.org/days-in-amsterdam/zaanse-schans.jpg"
+alt="风车村，实在是一个世外桃花源" width="600" height="400"/>&lt;figcaption>
+&lt;p>风车村，实在是一个世外桃花源&lt;/p>
+&lt;/figcaption>
+&lt;/figure>
+&lt;p>在阿姆斯特丹的这几天里，尽管有时差，但我总起得很早，异地晚醒总让我觉得可惜。每天行走在街上，我总刻意放慢脚步，欣赏着沿途的一切风景。这是个与诗结伴，与歌同行的城市。城市内部有国家博物馆、冯德尔公园、水坝广场等景点，远些有风车村、羊角村等让人流连忘返的去处。这里有上百条运河，每走几步就会让人有拍照的欲望。阿姆斯特丹城市不大，汽车也不多，这里的居民主要以自行车代步，街道有上专门的自行车道。这里的人口数量不多，白天的热闹主要来源于人们对生活的热情和享受。见过在博物馆附近弹奏着奇怪乐器的音乐人，见过在酒店附近带着狗狗乞讨的流浪汉，这样的场景出现在阿姆斯特丹这个城市里却让人感觉意外地和谐。&lt;/p>
+&lt;figure>&lt;img src="http://example.org/days-in-amsterdam/cheese.jpg"
+alt="当地人喜欢吃的奶酪" width="600" height="400"/>&lt;figcaption>
+&lt;p>当地人喜欢吃的奶酪&lt;/p>
+&lt;/figcaption>
+&lt;/figure>
+&lt;p>这是的饮食相对于国内的还是偏贵，瓶装水或是饮料都要 2 欧左右，一餐的普通消费差不多 15 欧左右。在饭店吃完后，服务员经常会问：“Do you enjoy?”。当然，对于吃惯了中国菜的我们，有时连回答 “Yes” 都会觉得面露难色，比如觉得这里的培根做得太咸，这里的奶酪味道太重。阿姆斯特丹有几种交通工具：公交、地铁、有轨电车（tram）、火车和自行车。在路上行走时，需要特意留意人行道和自行车道。当地有些人骑自行车比较快，走在路上时，时不时会有自行车从你身旁呼啸而过。&lt;/p>
+&lt;p>在阿姆斯特丹的几天里，拜访了一个在 &lt;a href="http://www.booking.com/">booking.com&lt;/a> 工作的朋友，参观了公司的工作环境。谈话中，聊起了当地和国内北上广一些大城市的区别，深觉很多事都是围城。用一句习语形容很贴切：&lt;code>You win some, you lose some&lt;/code>。但其实什么事不是这样呢？&lt;/p>
+&lt;figure>&lt;img src="http://example.org/days-in-amsterdam/booking-lunch.jpg"
+alt="booking 的午餐，种类繁多" width="600" height="400"/>&lt;figcaption>
+&lt;p>booking 的午餐，种类繁多&lt;/p>
+&lt;/figcaption>
+&lt;/figure>
+&lt;p>我在我的 &lt;a href="https://www.instagram.com/ct.liu/">instagram&lt;/a> 主页上加了所去过国家的国旗，这让我觉得很有意思，但更多的国旗却不是一个目标。我很喜欢日本，也很喜欢阿姆斯特丹，但不觉得到异地的游玩应该是种常态。有些事偶尔为之才有它的色彩，生活，总能找到其它平凡的点缀。当然，什么时候当我以人文为视角到处行走，就另当别论了。&lt;/p>
+&lt;h4 id="意外的插曲">意外的插曲&lt;/h4>
+&lt;p>本来应该是 16 号早上回北京，却因回程的航空公司（荷兰皇家航空公司，KLM）超售，导致最后某名地换了个航班，认识了 2 个同样遭遇的中国友人，途中转机时在土耳其机场呆了几个小时，也算是一个奇妙的经历了。&lt;/p>- http://example.org/posts/days-in-amsterdam/ -</description></item><item><title>日本之行</title><link>http://example.org/posts/japan-trip/</link><pubDate>Fri, 16 Sep 2016 18:20:31 +0000</pubDate><guid>http://example.org/posts/japan-trip/</guid><description>Space of ctliu3 http://example.org/posts/japan-trip/ -&lt;figure>&lt;img src="http://example.org/japan-trip/Ginza.JPG"
+alt="夜晚的银座"/>&lt;figcaption>
+&lt;p>夜晚的银座&lt;/p>
+&lt;/figcaption>
+&lt;/figure>
+&lt;p>不久前还计划着和友人 &lt;a href="https://www.facebook.com/zhichun.wu">wzc&lt;/a> 到日本玩几天，转眼间旅程已经结束，而我又回到弥漫沉闷气息的北京。了解一个地方，不外忽历史和人文。然而，短暂的旅程、蹩脚的交流能力和不够外放的性格，让我觉得和日本人的生活总隔着一层薄膜，以致于对日本的印象只有那些浮于表面的第一观感。&lt;/p>
+&lt;h4 id="日本印象">日本印象&lt;/h4>
+&lt;p>这次的行程基本是随大流，走走停停地逛了东京、京都的一些古迹、商业区。印象很深的一点是日本的交通相比北京要复杂的得多，而 Google Map 又经常出现定位不准确问题，所以在日本寻找目的地是一件苦力活。在日本，打的的价格非常昂贵，所以基本是不敢打的的。然而日本的公交和地铁线路多而且准时，所以对于大众其实也没有打的的必要了。&lt;/p>
+&lt;p>在饮食方面，日本要比北京消费水平高些，吃一顿普通的餐饮都要 1000 yen 左右。日本的拉面、鳗鱼饭都是值得尝试的料理。但说起多样性，还是远没有中国来得多。&lt;/p>
+&lt;p>从生活的角度，不得不说日本人很讲究，或说，诗意。京都街头随处可见卖各种具有当地特色的生活饰品，但好些实用性都不强。日本的大部分店铺开得晚关得早。记得我有一天早上 9 点左右到秋叶原，而街上只有零星的行人，大部门的店面都是 10 点左右才陆陆续续开门。此外，无处不在的日本敬语可以让你感到岛国满满的温和气息。&lt;/p>
+&lt;h4 id="东京京都">东京、京都&lt;/h4>
+&lt;p>东京和京都是很不一样的地方。东京现代化气息很浓厚，而京都就显得古香古色。东京银座和北京三里屯很像，充斥着各种雄伟的建筑和奢华的品牌。这样的繁华之地该是会让一堆怀惴梦想的年轻人趋之若骛吧。去东京之前，秋叶原是我最想去的地方，毕竟这里的动漫文化浓烈。然而真正身临秋叶原时却没有那么强烈的感觉，这里的一部分元素能引起我的好奇心，但更多的感觉这里只是个购买手办、电子产品的地方。&lt;/p>
+&lt;figure>&lt;img src="http://example.org/japan-trip/Akihabara.JPG"
+alt="Akihabara"/>&lt;figcaption>
+&lt;p>Akihabara&lt;/p>
+&lt;/figcaption>
+&lt;/figure>
+&lt;p>相比东京，京都随处遍布着大大小小的寺庙，寺庙跟公园一样，是个让人感到放松的地方。心緒放空地漫步在寺庙或是街道上，是件很舒服的事。但由于不甚了解每个寺庙在日本历史长河中所扮演的角色，所以只能以观景为主。&lt;/p>
+&lt;figure>&lt;img src="http://example.org/japan-trip/Fushimi-Inari-Taisha.JPG"
+alt="Fushimi-Inari-Taisha"/>&lt;figcaption>
+&lt;p>Fushimi-Inari-Taisha&lt;/p>
+&lt;/figcaption>
+&lt;/figure>
+&lt;p>更多的图片可以看我的 &lt;a href="https://www.instagram.com/ct.liu/">instagram&lt;/a>.&lt;/p>- http://example.org/posts/japan-trip/ -</description></item><item><title>Build a high performance image prediction service</title><link>http://example.org/posts/high-performance-image-prediction-service/</link><pubDate>Sun, 04 Sep 2016 22:36:00 +0000</pubDate><guid>http://example.org/posts/high-performance-image-prediction-service/</guid><description>Space of ctliu3 http://example.org/posts/high-performance-image-prediction-service/ -&lt;p>Deep learning is absolutely one of the keywords in these years. Like many other company, we use deep learning to solve some tasks, like image classification, OCR, face detection, etc. I’ve spent some time building the image classification service and done some optimizations during my work. I will share some of my experience in this article.&lt;/p>
+&lt;h3 id="cpu-orgpu">CPU or GPU&lt;/h3>
+&lt;p>It really depends on a variety of factors, such as the request scale, power consumption, etc. GPU is expensive, but running the forward phase on the GPU device has dozens of times speed-up than CPU even you use OpenBLAS or MKL to accelerate the underlying matrix manipulation in CPU.&lt;/p>
+&lt;h3 id="prediction-modeldesign">Prediction Model design&lt;/h3>
+&lt;p>In general case, people will try to predict the image category using convolutional neural networks (CNN), like AlexNet, GoogleNet, or VGGNet. Different networks has different prediction performance and time complexity in inference phase. For example, executing forward stage in AlexNet is 4 times faster than GoogleNet. But GoogleNet has better classification ability since it’s deeper and wider. Directly training the pre-trained model on the ImageNet or some other open database might not meet your need for precision and recall. To gain a higher precision and recall, there are many approaches worth to try: re-design the network, use the cascaded model, integrate the outputs of multi-network, predict with multiple scales. All these strategies are doable and sound great. But remember, these designs might more or less increase the time and GPU memory cost. So, take the time and space complexity into account while designing the neural network models.&lt;/p>
+&lt;h3 id="prediction-frameworks">Prediction Frameworks&lt;/h3>
+&lt;p>Building an neural network prediction framework from scratch of you own might not a smart idea since there are some well-built projects such as Caffe, MXNet and TensorFlow, which can be deployed directly in the production environment. Take following pros and cons into account before choosing one.&lt;/p>
+&lt;ul>
+&lt;li>Caffe. Maybe this is the most popular framework that people are familiar with, which means you can find lots of solutions for the problem you encounter on the Internet. Caffe has graceful C++ and python API. The cons is that it occupies too much GPU memory when comparing with MXNet and TensorFlow. This is the design issue. Caffe will allocate the memory for parameters and output of each layer and these memory can not be reused. For GoogleNet model, Caffe allocates 6x GPU memory than MXNet. The good news is that if you want to load multiple identical models on the same process, you can share the parameters of each layer.&lt;/li>
+&lt;li>MXNet. A deep learning that has a better design of GPU memory allocation. It constructs the neural network as a computation graph. Each node in the graph can be reuse and it has high performance since the computation is not executed layer-by-layer, but based on the node (a node is a computation unit like add, minus, multiply and divide). Concretely, a node can be executed if its preceding nodes are finished. Like Caffe, MXNet also has graceful C++ and python API. The bad news is MXNet has worse performance when running on CPU. Take a look of this issue.&lt;/li>
+&lt;li>TensorFlow. The GPU memory usage and performance are close to MXNet. I don’t have experience on TensorFlow on production environment. The official team provides a project, called serving, to help deploy deep learning models.&lt;/li>
+&lt;/ul>
+&lt;h3 id="single-or-batch-prediction">Single or Batch prediction&lt;/h3>
+&lt;p>Running a GoogleNet V1 in forward (with cuDNN) with the batch size of 10 is only~30% time of running batch size of 1 in 10 times. This conclusion provides us a way to improve the service performance. We can add a middleware to serve the request from client and forward them to prediction service. There are some features for the middleware showing as followings:&lt;/p>
+&lt;ul>
+&lt;li>Request coalescing duration. The middleware needs to forward the batched images within a limited period of time even the requested imaged to be predicted is smaller than the batch size. If not, it brings high-latency. &lt;/li>
+&lt;li>Batch size. In general, the throughput of the prediction system will be enhanced if batch size increased. But too larger a batch size leads to high GPU memory occupation and service latency.&lt;/li>
+&lt;li>Rate limiting. The middleware can limit the number of request to fit the service limitation of prediction service.&lt;/li>
+&lt;/ul>
+&lt;p>Following figure a flexible and extensible architecture.&lt;/p>
+&lt;figure>&lt;img src="http://example.org/high-performance-image-prediction-service/prediction-flow.png"
+alt="prediction-flow"/>&lt;figcaption>
+&lt;p>prediction-flow&lt;/p>
+&lt;/figcaption>
+&lt;/figure>
+&lt;h3 id="image-decode-optimization">Image decode optimization&lt;/h3>
+&lt;p>Decode a 1080P image will cost ~30ms in CPU while running inference of GoogleNet V1 only cost ~10ms in GPU. Thus, decoding image may somehow become bottleneck. To solve this, It’s better to resize the image in front end. In addition, decoding image with in libjpeg-turbo library ~30% faster than libjpeg (I got this result but the official site claims that better performance can be achieved).&lt;/p>
+&lt;h3 id="conclusion">Conclusion&lt;/h3>
+&lt;p>The strategies above mentioned are not only suitable for image prediction service, but also for face recognition, face detection, etc.&lt;/p>- http://example.org/posts/high-performance-image-prediction-service/ -</description></item><item><title>Tips you should know about Caffe</title><link>http://example.org/posts/tips-you-should-know-about-caffe/</link><pubDate>Sat, 08 Aug 2015 16:49:18 +0000</pubDate><guid>http://example.org/posts/tips-you-should-know-about-caffe/</guid><description>Space of ctliu3 http://example.org/posts/tips-you-should-know-about-caffe/ -&lt;p>&lt;a href="https://github.com/BVLC/caffe">Caffe&lt;/a> is a wonderful deep learning (DL) framework, written in C++ and it is still under construction. I use Caffe to do some image related tasks these days. Technologically, I use Caffe just around one week, so I’m also a newbie. I encounter some “pits” when using Caffe. So I write down some tips, hope they are helpful to you.&lt;/p>
+&lt;h3 id="what-caffe-can-do">What Caffe can do?&lt;/h3>
+&lt;p>Caffe is actually a feature learning tool, you can do some specific tasks like classification, clustering, segmentation with the help of it. You can define the structure of the network to train the model of your own. Otherwise, some pre-trained models, including &lt;a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_googlenet">googlenet&lt;/a>, &lt;a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_reference_caffenet">caffenet&lt;/a>, are provided, they can be used directly.&lt;/p>
+&lt;h3 id="read-the-source-code">Read the source code&lt;/h3>
+&lt;p>In some degree, Caffe is really a blackbox. Therefore, if you first time meet it, you may want to dig into the source code to see the scenery behind Caffe. Knowing the following modules, which are described in a high level, will make your travel easier.&lt;/p>
+&lt;ul>
+&lt;li>&lt;a href="https://github.com/BVLC/caffe/blob/master/src/caffe/blob.cpp">Blob&lt;/a>. The data that flows up and down in the deep learning network is wrapped by Blob class. Blob is a 4-dimensional (4D) data and it contains different kinds of information when it is in different positions in the net. For the input, the shape of data is &lt;code>#image x #channel x height x width&lt;/code>. For the output, it is &lt;code>#image x #class x 1 x 1&lt;/code>. Thus, you can compare the &lt;code>#class&lt;/code> predictions and choose the maximal value to get which class each image belongs to.&lt;/li>
+&lt;li>&lt;a href="https://github.com/BVLC/caffe/blob/master/src/caffe/net.cpp">Net&lt;/a>. This module describes the DL net. You will find many variables in the &lt;a href="https://github.com/BVLC/caffe/blob/master/src/caffe/net.cpp">net.cpp&lt;/a>, but don’t be dismay, many of them are used to keep the structure of DL net. Think about how you construct a &lt;a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">circled acyclic graph&lt;/a> (DAG) in C++. It’s almost the same. But you do really need to know the input and output data of the net, as described above.&lt;/li>
+&lt;li>&lt;a href="https://github.com/BVLC/caffe/blob/master/src/caffe/layer_factory.cpp">Layer&lt;/a>. This is a significant module in Caffe. One thing you need to know is, for a layer, there may be more than one layers under it and more than one layer above it. That’s it. If you are not a researcher, you can skip this amount of implements of different layers, which make one petrified. But I do recommend you should understand the function of each layer by their layer types.&lt;/li>
+&lt;/ul>
+&lt;p>Caffe uses &lt;a href="https://developers.google.com/protocol-buffers/">protocol buffer&lt;/a> to define the data format, so reading the &lt;a href="https://github.com/BVLC/caffe/blob/master/src/caffe/proto/caffe.proto">caffe.proto&lt;/a> file will be your first step before reading other parts of the source code.&lt;/p>
+&lt;h3 id="features-extraction">Features extraction&lt;/h3>
+&lt;p>Since DL net is a multiple layers network, you can extract the features generated in some layers to do the future task, such as clustering. Although you can extract any layer in the network, usually the last layer before output is a better option. The extracted features are stored in &lt;code>leveldb&lt;/code> or &lt;code>lmdb&lt;/code> format and you need to write code to obtain the plain data of feature data. There is a simple script written in python.&lt;/p>
+&lt;div class="highlight">&lt;pre tabindex="0" style="background-color:#f0f3f3;-moz-tab-size:4;-o-tab-size:4;tab-size:4;">&lt;code class="language-python" data-lang="python">&lt;span style="display:flex;">&lt;span>&lt;span style="color:#069;font-weight:bold">import&lt;/span> &lt;span style="color:#0cf;font-weight:bold">lmdb&lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#069;font-weight:bold">from&lt;/span> &lt;span style="color:#0cf;font-weight:bold">caffe.proto&lt;/span> &lt;span style="color:#069;font-weight:bold">import&lt;/span> caffe_pb2
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>&lt;span style="color:#069;font-weight:bold">def&lt;/span> &lt;span style="color:#c0f">save2txt&lt;/span>(db_name):
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> img_db &lt;span style="color:#555">=&lt;/span> lmdb&lt;span style="color:#555">.&lt;/span>open(db_name)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> txn &lt;span style="color:#555">=&lt;/span> img_db&lt;span style="color:#555">.&lt;/span>begin()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> cursor &lt;span style="color:#555">=&lt;/span> txn&lt;span style="color:#555">.&lt;/span>cursor()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> cursor&lt;span style="color:#555">.&lt;/span>iternext()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> datum &lt;span style="color:#555">=&lt;/span> caffe_pb2&lt;span style="color:#555">.&lt;/span>Datum()
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#069;font-weight:bold">for&lt;/span> key, value &lt;span style="color:#000;font-weight:bold">in&lt;/span> cursor:
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> datum&lt;span style="color:#555">.&lt;/span>ParseFromString(value)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> data &lt;span style="color:#555">=&lt;/span> caffe&lt;span style="color:#555">.&lt;/span>io&lt;span style="color:#555">.&lt;/span>datum_to_array(datum)
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> data &lt;span style="color:#555">=&lt;/span> np&lt;span style="color:#555">.&lt;/span>reshape(data, (&lt;span style="color:#f60">1&lt;/span>, np&lt;span style="color:#555">.&lt;/span>product(data&lt;span style="color:#555">.&lt;/span>shape)))[&lt;span style="color:#f60">0&lt;/span>]
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#555">//&lt;/span> data &lt;span style="color:#000;font-weight:bold">is&lt;/span> the feature &lt;span style="color:#069;font-weight:bold">with&lt;/span> shape (&lt;span style="color:#09f;font-style:italic">#feat, ) &lt;/span>
+&lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#555">//&lt;/span> Your code&lt;span style="color:#555">.&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="whats-more">What’s more&lt;/h3>
+&lt;p>During the usage of Caffe, you need to do lots of trivial work, like putting the data in certain directory, checking the output of each step is whether correct or not, or sometimes you need to visualize the output data in website in that you probably work on the remote machine, etc.
+In light of this, being familiar with &lt;a href="https://en.wikipedia.org/wiki/Bash_(Unix_shell)">bash/sh&lt;/a>, &lt;a href="https://www.python.org">python&lt;/a> or &lt;a href="https://www.ruby-lang.org/zh_cn/">ruby&lt;/a> will greatly improve your working efficiency. You can check my &lt;a href="https://gist.github.com/ctliu3/fc1148da3922cff09eb7">code snippet&lt;/a> in github for fast learning of bash.&lt;/p>- http://example.org/posts/tips-you-should-know-about-caffe/ -</description></item><item><title>NLP PA: Parsing</title><link>http://example.org/posts/nlp-pa-parsing/</link><pubDate>Fri, 05 Apr 2013 13:57:15 +0000</pubDate><guid>http://example.org/posts/nlp-pa-parsing/</guid><description>Space of ctliu3 http://example.org/posts/nlp-pa-parsing/ -&lt;p>本周的 PA 是对给定的句子求出相应的句法树（Parsing tree）。实际上，Parsing 经常也做为一些实际应用的预处理，比如机器翻译（Machine Translation, MT），因为不同语言的句子结构（如主谓宾）有很大的区别，通过句法分析得到句子的结构及单词词性，再根据不同语言本身的句法特点进行变换。&lt;/p>
+&lt;p>在 NLP 中，词类标注（Part-of-speech Tagging, POS）也跟 Parsing 有关系。POS 可以作为 Parsing 的预处理，因为在我们通过 tagging 确定了每个词语的词性时，后续的 Parsing 规则就可以得到简化。不过由于 tagging 也会出现错误，所以加了效果不一定更好。&lt;/p>
+&lt;p>&lt;a href="http://www.cs.columbia.edu/~mcollins/courses/nlp2011/notes/pcfgs.pdf" title="PCFG">PCFG&lt;/a> 是一种基于统计、规则的求解 Parsing 的方法，当然该方法已经很早了，只能作为 baseline，不过现在很多的方法和模型还是以此为基础。设有元组&lt;/p>
+&lt;p>$$
+G = \left( N, \Sigma, S, R, q\right)
+$$&lt;/p>
+&lt;p>其中，$N$ 为非叶结点（non-terminals），$\Sigma$ 为 Parsing tree 的叶结点（vocabulary），$R$ 为规则（rule），$q$ 为规则的参数（parameter）。在本题中，$R$ 是满足 Chomsky Normal Form（&lt;a href="http://en.wikipedia.org/wiki/Chomsky_normal_form" title="CNF">CNF&lt;/a>）的，即只有以下两种形式：&lt;/p>
+&lt;p>$$
+\begin{align*}
+&amp;amp; X \to Y_1Y_2, 其中X \in N, Y_1 \in N, Y_2 \in N \\
+&amp;amp; X \to Y, 其中X \in N, Y \in \Sigma
+\end{align*}
+$$&lt;/p>
+&lt;h3 id="part-1-20-points">Part 1 (20 points)&lt;/h3>
+&lt;p>该步骤跟上次的 HMM tagger 预处理一样，把训练集中的词汇分成两种：出现频率 &amp;lt;5 的为 &lt;code>RARE&lt;/code>，否则为 &lt;code>non-RARE&lt;/code>，该步骤也可以理解成是一个平滑操作。&lt;/p>
+&lt;p>&lt;!-- raw HTML omitted -->[code]&lt;!-- raw HTML omitted -->&lt;/p>
+&lt;h3 id="part-2-40-points">Part 2 (40 points)&lt;/h3>
+&lt;p>得到 Parsing tree 的过程用的是 &lt;a href="http://en.wikipedia.org/wiki/CYK_algorithm" title="CKY Algorithm">CKY算法&lt;/a>，其实就是个 bottom-up 的 3 维DP。DP(i,j,X) 表示待分析句子的第 i 个单词到第 j 个单词，规则的 left-hand side 为 X 的概率最大值。目标状态为 DP(1,n,&amp;ldquo;SBARQ&amp;rdquo;)，&amp;ldquo;SBARQ&amp;rdquo; 为题目指定的值，当然自己去遍历所有的 symbol 也是可以的。状态转移方程为：&lt;/p>
+&lt;p>$$
+DP(i,j,X) = max{P(X \to Y \ Z) \times DP(i,s,Y) \times DP(s+1,j,Z) }
+$$&lt;/p>
+&lt;p>几个要注意的坑：&lt;/p>
+&lt;p>1 初始化。初始的部分是 Parsing tree 的叶结点。在 Part 1 中我们已经将训练集分成两类：RARE 和 non-RARE。该初始化必须遵守以下步骤：&lt;/p>
+&lt;ul>
+&lt;li>如果 P(X-&amp;gt;Xi) 在 &lt;code>parse_train.counts.out&lt;/code> 出现过，即说明 Xi 不是 &lt;code>RARE&lt;/code>，那么直接赋值 P(X-&amp;gt;Xi)；&lt;/li>
+&lt;li>否则如果 Xi 没有出现在 &lt;code>parse_train.counts.out&lt;/code> 并且 P(X-&amp;gt;&lt;code>RARE&lt;/code>) 存在，那么赋值 P(X-&amp;gt;&lt;code>RARE&lt;/code>)；&lt;/li>
+&lt;li>否则，赋值为 0。&lt;/li>
+&lt;/ul>
+&lt;p>因为概率相乘会导致过小的值，可以用 log 转化，当然本题不转也可以。&lt;/p>
+&lt;p>2 结果输出。按题目要求，求解得到的 Parsing tree 是用 &lt;code>json&lt;/code> 来解析的，比如以下是一个输出结果：&lt;/p>
+&lt;!-- raw HTML omitted -->
+&lt;!-- raw HTML omitted -->
+&lt;p>如果是用 python 直接 &lt;code>print&lt;/code> 的话，字符串是以单引号形式出现的，直接用 json 解析会出错。在 VIM 下可以用全局替换命令进行替换：&lt;code>%s/'/&amp;quot;/g&lt;/code>。&lt;/p>
+&lt;p>&lt;!-- raw HTML omitted -->[code]&lt;!-- raw HTML omitted -->&lt;/p>
+&lt;h3 id="part-3-1-point">Part 3 (1 point)&lt;/h3>
+&lt;p>该部分只是在 Part 2 的基础上，在 Parsing tree 的每个结点上加入了 &lt;code>parent&lt;/code> 信息。因为对于原始的 PCFG 来说：Independence assumption is too strong! 由于该信息数据已经给出，所以求解过程跟 Part 2 差不多。只不过这时的 non-terminal 数据量会增加，复杂度会高些。如果你 Part 2 的代码已经是比较优化的，跑 Part 3 的数据也不会慢多少。&lt;/p>
+&lt;h3 id="weakness-of-pcfg">Weakness of PCFG&lt;/h3>
+&lt;p>作为一个教科书上的算法，PCGF 劣势 &amp;gt;=2：&lt;/p>
+&lt;p>1 没有充分利用句中单词带来的信息量。算法过程中只有在求解 $P(X \to X_i)$ 用到了单词的信息，而该信息没有作用到全局上。&lt;/p>
+&lt;p>2 没有充分利用句子的结构信息。同样的 rule，同样的 probability value，可能导致不同的 Parsing tree。&lt;/p>- http://example.org/posts/nlp-pa-parsing/ -</description></item><item><title>NLP PA: Hidden Markov Models</title><link>http://example.org/posts/nlp-pa-hidden-markov-models/</link><pubDate>Sun, 24 Mar 2013 13:27:49 +0000</pubDate><guid>http://example.org/posts/nlp-pa-hidden-markov-models/</guid><description>Space of ctliu3 http://example.org/posts/nlp-pa-hidden-markov-models/ -&lt;p>&lt;a href="https://class.coursera.org/nlangp-001/class/index" title="NLP">传送门&lt;/a>&lt;/p>
+&lt;p>HMM 是通过预测一连串的 $y_i$ 来得到模型 $p(x_1 \dots x_n, y_1 \dots y_n)$ 的概率最大值。本周的 Programming 主要是利用 HMM 来做针对句子的词性 tagger。&lt;/p>
+&lt;p>$$
+p(x_1 \dots x_n, y_1 \dots y_{n+1}) =
+\prod_{i=1}^{n+1} q(y_i|y_{i-2},y_{i-1}) \times \prod_{i=1}^n e(x_i|y_i)
+$$&lt;/p>
+&lt;p>为方便求解，一般把待标注的句子变成*,*,sentence,STOP，即 $ y_0=y_{-1}=*, y_n=STOP $。在标注前，先对数据进行处理：把所有在训练集中出现且次数 &amp;lt;5 的单词替换成 &lt;code>RARE&lt;/code>。&lt;/p>
+&lt;h3 id="part-1">Part 1&lt;/h3>
+&lt;p>作为 baseline，一开始忽略句子内部的联系，用MLE来估计每个 $x_i$ 所属的 tag。也就是求$${\arg\max_y} e(x|y)$$&lt;/p>
+&lt;p>其中&lt;/p>
+&lt;p>$$
+e(x|y) = \frac{Count(x, y)}{Count(y)}
+$$&lt;/p>
+&lt;p>$Count(x,y)$ 表示 $x$ 和 $y$ 一起出现的概率。如果对于未出现在训练集的词，$p(x\vert y_i)=0$，而无法取 max 值。所以这时把 $x$ 当成是 RARE，对比 $p(RARE\vert y_i)$ 的值。&lt;/p>
+&lt;h3 id="part-2">Part 2&lt;/h3>
+&lt;p>这部分实现的是Viterbi算法，经典的 $O(n|S|^3)$ 的 DP。DP(i,u,v) 表示以 i 为结尾，前两个连续的单词为 u,v 的最大值。转移方程为&lt;/p>
+&lt;p>$$
+DP(i,y_i,y_{i-1}) = max{ DP(i-1, y_{i-1}, y_{i-2}) \times p(y_i|y_{i-2},y_{i-1}) \times e(x_i|y_i) }
+$$&lt;/p>
+&lt;p>初始化$DP(0,*,*) = 1$。目标状态为$DP(n,STOP,u)$。&lt;/p>
+&lt;p>求解过程中，对于未出现在训练集中的词，同样当成 RARE 处理。而对于出现在训练集中，而 $Count(x,y)=0$ 的词，其 $e(x\vert y)$ 值为 0。另外，在 DP 过程中，$y_{-1,0,n+1}$ 的 tag 都为已知，所以也要加特判。&lt;/p>
+&lt;h3 id="part-3">Part 3&lt;/h3>
+&lt;p>为了增加对 &lt;code>RARE&lt;/code> 的判别性，这部分把 RARE 再进行了细化，比如全为大写的为一类，出现数字的为一类。&lt;/p>
+&lt;p>对于 &lt;code>gene.test&lt;/code>，三种方法的 F1-Score 如下：&lt;/p>
+&lt;table>
+&lt;thead>
+&lt;tr>
+&lt;th style="text-align:center">#Part 1&lt;/th>
+&lt;th style="text-align:center">#Part 2&lt;/th>
+&lt;th style="text-align:center">#Part 3&lt;/th>
+&lt;/tr>
+&lt;/thead>
+&lt;tbody>
+&lt;tr>
+&lt;td style="text-align:center">0.26308&lt;/td>
+&lt;td style="text-align:center">0.36514&lt;/td>
+&lt;td style="text-align:center">0.39519&lt;/td>
+&lt;/tr>
+&lt;/tbody>
+&lt;/table>
+&lt;p>除了 #Part 2 跟 Goal F1-Score 差 了0.00030，其他都一致。&lt;/p>- http://example.org/posts/nlp-pa-hidden-markov-models/ -</description></item></channel></rss>
