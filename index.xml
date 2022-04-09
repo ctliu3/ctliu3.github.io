@@ -1,7 +1,7 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Space of ctliu3</title><link>http://example.org/</link><description>Recent content on Space of ctliu3</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Sun, 16 Apr 2017 09:19:22 +0000</lastBuildDate><atom:link href="http://example.org/index.xml" rel="self" type="application/rss+xml"/><item><title>Implement style transfer in Pytorch</title><link>http://example.org/posts/implement-style-transfer-in-pytorch/</link><pubDate>Sun, 16 Apr 2017 09:19:22 +0000</pubDate><guid>http://example.org/posts/implement-style-transfer-in-pytorch/</guid><description>Space of ctliu3 http://example.org/posts/implement-style-transfer-in-pytorch/ -&lt;p>Prisma 在去年异常火爆，它能将艺术图片（如梵高的「星空」）与任意图片融合，生成一张同时带有两者风格的图片。专业点的说法，这叫 Style transfer（风格迁移）。其实第一篇风格化相关的文章 2015 年就有了，但由于它把训练和预测放一起了，导致无法做到实时。当然，这个问题后面几个月就被解决了，也就有了再后来的 Prisma。在这篇文章里，只介绍 style transfer 的主要思路，Pytorch 实现的代码可以查看&lt;a href="https://github.com/ctliu3/neural-style">这里&lt;/a>。&lt;/p>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Space of ctliu3</title><link>https://ctliu3.github.io/</link><description>Recent content on Space of ctliu3</description><generator>Hugo -- gohugo.io</generator><lastBuildDate>Sun, 16 Apr 2017 09:19:22 +0000</lastBuildDate><atom:link href="https://ctliu3.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>Implement style transfer in Pytorch</title><link>https://ctliu3.github.io/posts/implement-style-transfer-in-pytorch/</link><pubDate>Sun, 16 Apr 2017 09:19:22 +0000</pubDate><guid>https://ctliu3.github.io/posts/implement-style-transfer-in-pytorch/</guid><description>Space of ctliu3 https://ctliu3.github.io/posts/implement-style-transfer-in-pytorch/ -&lt;p>Prisma 在去年异常火爆，它能将艺术图片（如梵高的「星空」）与任意图片融合，生成一张同时带有两者风格的图片。专业点的说法，这叫 Style transfer（风格迁移）。其实第一篇风格化相关的文章 2015 年就有了，但由于它把训练和预测放一起了，导致无法做到实时。当然，这个问题后面几个月就被解决了，也就有了再后来的 Prisma。在这篇文章里，只介绍 style transfer 的主要思路，Pytorch 实现的代码可以查看&lt;a href="https://github.com/ctliu3/neural-style">这里&lt;/a>。&lt;/p>
 &lt;h3 id="style-transfer">Style Transfer&lt;/h3>
 &lt;p>对于一个图像分类网络，输入是图像，输出是该图像属于每个类别的概率。而训练风格迁移，输入是艺术图和待风格化的图，输出是两者的融合，即风格化后的图。虽然我拿它跟图像分类作对比，但除了都使用 CNN 来提取特征，它们并不具有可比性。具体流程可以看下面的流程图&lt;/p>
-&lt;figure>&lt;img src="http://example.org/Implement-style-transfer-in-Pytorch/neural-style-flow.jpg"
+&lt;figure>&lt;img src="https://ctliu3.github.io/Implement-style-transfer-in-Pytorch/neural-style-flow.jpg"
 alt="风格迁移流程图"/>&lt;figcaption>
 &lt;p>风格迁移流程图&lt;/p>
 &lt;/figcaption>
@@ -38,7 +38,7 @@ alt="风格迁移流程图"/>&lt;figcaption>
 &lt;/ul>
 &lt;h3 id="reference">Reference&lt;/h3>
 &lt;p>&lt;a href="http://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf">[1]&lt;/a>: Gatys L A, Ecker A S, Bethge M, Image Style Transfer Using Convolutional Neural Networks, CVPR 2016&lt;/p>
-&lt;p>&lt;a href="https://arxiv.org/abs/1603.08155">[2]&lt;/a>: Johnson J, Alahi A, Fei-Fei L., Perceptual Losses for Real-Time Style Transfer and Super-Resolution, ECCV 2016&lt;/p>- http://example.org/posts/implement-style-transfer-in-pytorch/ -</description></item><item><title>Rate Limiter</title><link>http://example.org/posts/rate-limiter/</link><pubDate>Sat, 03 Dec 2016 10:52:19 +0000</pubDate><guid>http://example.org/posts/rate-limiter/</guid><description>Space of ctliu3 http://example.org/posts/rate-limiter/ -&lt;p>I dig into rate limiter these days. Rate limiter is a tool that limits the number of request in a given short period. Any service only can handle limited requests with limited resources (cpu, memory, etc). Rate limiter prevents service to reach a high load that beyond its load capacity.&lt;/p>
+&lt;p>&lt;a href="https://arxiv.org/abs/1603.08155">[2]&lt;/a>: Johnson J, Alahi A, Fei-Fei L., Perceptual Losses for Real-Time Style Transfer and Super-Resolution, ECCV 2016&lt;/p>- https://ctliu3.github.io/posts/implement-style-transfer-in-pytorch/ -</description></item><item><title>Rate Limiter</title><link>https://ctliu3.github.io/posts/rate-limiter/</link><pubDate>Sat, 03 Dec 2016 10:52:19 +0000</pubDate><guid>https://ctliu3.github.io/posts/rate-limiter/</guid><description>Space of ctliu3 https://ctliu3.github.io/posts/rate-limiter/ -&lt;p>I dig into rate limiter these days. Rate limiter is a tool that limits the number of request in a given short period. Any service only can handle limited requests with limited resources (cpu, memory, etc). Rate limiter prevents service to reach a high load that beyond its load capacity.&lt;/p>
 &lt;p>Generally, rate limiter can be implemented using leaky bucket or token bucket algorithms. The main difference between them is the rate accepting a request. The word &amp;ldquo;bucket&amp;rdquo; is really imagery word that can help you catch the idea of the algorithms.&lt;/p>
 &lt;p>For leaky bucket algorithm, the time gap between any two adjacent requests should be greater than a fixed value. Therefore, if there comes huge requests in a short period, the requests will through the service one by one, no burstiness happens. However, the burstiness occurs in token bucket algorithm. Before passing the limiter, request should check if there is enough tokens left. If there is, then the request is accepted. The tokens will be refilled in a given period. If many requests get the tokens at almost the same time, then burstiness takes place.&lt;/p>
 &lt;p>For a full-featured rate limiter, following points should be considered:&lt;/p>
@@ -50,7 +50,7 @@ alt="风格迁移流程图"/>&lt;figcaption>
 &lt;li>Make it distributed. Multiple same service use a central limiter. But this will make the limiter a little bit heavy and I don&amp;rsquo;t recommend this in some degree.&lt;/li>
 &lt;li>etc&amp;hellip;&lt;/li>
 &lt;/ul>
-&lt;p>In &lt;a href="https://github.com/ctliu3/tap">tap&lt;/a>, which is a project in github, I implement the above two algorithms of rate limiter using golang. Also, I also extend the rate limiter to a distributed version, backend with redis. This project is a good start to understand rate limiter, but it&amp;rsquo;s still an experimental project, be careful if you want to use it in production environment. I don&amp;rsquo;t suppose to get into details about the tap because it&amp;rsquo;s not completed finished, you can take a glance on the codes.&lt;/p>- http://example.org/posts/rate-limiter/ -</description></item><item><title>参数服务器</title><link>http://example.org/posts/parameter-server/</link><pubDate>Sat, 12 Nov 2016 15:20:32 +0000</pubDate><guid>http://example.org/posts/parameter-server/</guid><description>Space of ctliu3 http://example.org/posts/parameter-server/ -&lt;p>参数服务器（Parameter Sever）是大规模机器学习的一个部分，比如 dmlc 中的 &lt;a href="https://github.com/dmlc/ps-lite">ps-lite&lt;/a>, 比如微软的 &lt;a href="https://www.google.com/url?sa=t&amp;amp;rct=j&amp;amp;q=&amp;amp;esrc=s&amp;amp;source=web&amp;amp;cd=1&amp;amp;cad=rja&amp;amp;uact=8&amp;amp;ved=0ahUKEwiiqp-RiaPQAhUDsI8KHZnNDBMQFgggMAA&amp;amp;url=https%3A%2F%2Fpdfs.semanticscholar.org%2F043a%2Ffbd936c95d0e33c4a391365893bd4102f1a7.pdf&amp;amp;usg=AFQjCNFFnirPzFhPQQ4KTeDH5MX8ff1OEw&amp;amp;sig2=iQsdfQFyUcPhG8kkP9B0-g">project adam&lt;/a>。本质上来，参数服务器就是个分布式系统，用于更新机器学习的模型参数。因此，一个完善的参数服务器要考虑到错误容忍、可扩展性、数据一致性等。&lt;/p>
+&lt;p>In &lt;a href="https://github.com/ctliu3/tap">tap&lt;/a>, which is a project in github, I implement the above two algorithms of rate limiter using golang. Also, I also extend the rate limiter to a distributed version, backend with redis. This project is a good start to understand rate limiter, but it&amp;rsquo;s still an experimental project, be careful if you want to use it in production environment. I don&amp;rsquo;t suppose to get into details about the tap because it&amp;rsquo;s not completed finished, you can take a glance on the codes.&lt;/p>- https://ctliu3.github.io/posts/rate-limiter/ -</description></item><item><title>参数服务器</title><link>https://ctliu3.github.io/posts/parameter-server/</link><pubDate>Sat, 12 Nov 2016 15:20:32 +0000</pubDate><guid>https://ctliu3.github.io/posts/parameter-server/</guid><description>Space of ctliu3 https://ctliu3.github.io/posts/parameter-server/ -&lt;p>参数服务器（Parameter Sever）是大规模机器学习的一个部分，比如 dmlc 中的 &lt;a href="https://github.com/dmlc/ps-lite">ps-lite&lt;/a>, 比如微软的 &lt;a href="https://www.google.com/url?sa=t&amp;amp;rct=j&amp;amp;q=&amp;amp;esrc=s&amp;amp;source=web&amp;amp;cd=1&amp;amp;cad=rja&amp;amp;uact=8&amp;amp;ved=0ahUKEwiiqp-RiaPQAhUDsI8KHZnNDBMQFgggMAA&amp;amp;url=https%3A%2F%2Fpdfs.semanticscholar.org%2F043a%2Ffbd936c95d0e33c4a391365893bd4102f1a7.pdf&amp;amp;usg=AFQjCNFFnirPzFhPQQ4KTeDH5MX8ff1OEw&amp;amp;sig2=iQsdfQFyUcPhG8kkP9B0-g">project adam&lt;/a>。本质上来，参数服务器就是个分布式系统，用于更新机器学习的模型参数。因此，一个完善的参数服务器要考虑到错误容忍、可扩展性、数据一致性等。&lt;/p>
 &lt;h3 id="基本架构">基本架构&lt;/h3>
 &lt;p>以 ps-lite 为例，ps-lite 从架构上来说是由 server, worker, scheduler 组成，三者的职责如下&lt;/p>
 &lt;ul>
@@ -108,33 +108,33 @@ alt="风格迁移流程图"/>&lt;figcaption>
 09:52:31 Iteration 160, accuracy: 0.811498
 09:52:39 Iteration 180, accuracy: 0.836619
 09:52:47 Iteration 200, accuracy: 0.804312
-&lt;/code>&lt;/pre>- http://example.org/posts/parameter-server/ -</description></item><item><title>阿姆斯特丹之行</title><link>http://example.org/posts/days-in-amsterdam/</link><pubDate>Sun, 16 Oct 2016 23:23:37 +0000</pubDate><guid>http://example.org/posts/days-in-amsterdam/</guid><description>Space of ctliu3 http://example.org/posts/days-in-amsterdam/ -&lt;figure>&lt;img src="http://example.org/days-in-amsterdam/amsterdam-canal-view.jpg"
+&lt;/code>&lt;/pre>- https://ctliu3.github.io/posts/parameter-server/ -</description></item><item><title>阿姆斯特丹之行</title><link>https://ctliu3.github.io/posts/days-in-amsterdam/</link><pubDate>Sun, 16 Oct 2016 23:23:37 +0000</pubDate><guid>https://ctliu3.github.io/posts/days-in-amsterdam/</guid><description>Space of ctliu3 https://ctliu3.github.io/posts/days-in-amsterdam/ -&lt;figure>&lt;img src="https://ctliu3.github.io/days-in-amsterdam/amsterdam-canal-view.jpg"
 alt="阴天里的阿姆斯特丹运河"/>&lt;figcaption>
 &lt;p>阴天里的阿姆斯特丹运河&lt;/p>
 &lt;/figcaption>
 &lt;/figure>
 &lt;p>当下火车，踏上阿姆斯特丹的街道时，我看到了以往在屏幕上才会看到的画面：不高但匠心独运的欧式建筑、漂浮着建筑倒影的运河、时停时飞的鸽子。才 8 点多，街上偶尔几个跑步的人，地上不算干净，空气中透着寒气，城市还没完全醒来。&lt;/p>
-&lt;figure>&lt;img src="http://example.org/days-in-amsterdam/zaanse-schans.jpg"
+&lt;figure>&lt;img src="https://ctliu3.github.io/days-in-amsterdam/zaanse-schans.jpg"
 alt="风车村，实在是一个世外桃花源" width="600" height="400"/>&lt;figcaption>
 &lt;p>风车村，实在是一个世外桃花源&lt;/p>
 &lt;/figcaption>
 &lt;/figure>
 &lt;p>在阿姆斯特丹的这几天里，尽管有时差，但我总起得很早，异地晚醒总让我觉得可惜。每天行走在街上，我总刻意放慢脚步，欣赏着沿途的一切风景。这是个与诗结伴，与歌同行的城市。城市内部有国家博物馆、冯德尔公园、水坝广场等景点，远些有风车村、羊角村等让人流连忘返的去处。这里有上百条运河，每走几步就会让人有拍照的欲望。阿姆斯特丹城市不大，汽车也不多，这里的居民主要以自行车代步，街道有上专门的自行车道。这里的人口数量不多，白天的热闹主要来源于人们对生活的热情和享受。见过在博物馆附近弹奏着奇怪乐器的音乐人，见过在酒店附近带着狗狗乞讨的流浪汉，这样的场景出现在阿姆斯特丹这个城市里却让人感觉意外地和谐。&lt;/p>
-&lt;figure>&lt;img src="http://example.org/days-in-amsterdam/cheese.jpg"
+&lt;figure>&lt;img src="https://ctliu3.github.io/days-in-amsterdam/cheese.jpg"
 alt="当地人喜欢吃的奶酪" width="600" height="400"/>&lt;figcaption>
 &lt;p>当地人喜欢吃的奶酪&lt;/p>
 &lt;/figcaption>
 &lt;/figure>
 &lt;p>这是的饮食相对于国内的还是偏贵，瓶装水或是饮料都要 2 欧左右，一餐的普通消费差不多 15 欧左右。在饭店吃完后，服务员经常会问：“Do you enjoy?”。当然，对于吃惯了中国菜的我们，有时连回答 “Yes” 都会觉得面露难色，比如觉得这里的培根做得太咸，这里的奶酪味道太重。阿姆斯特丹有几种交通工具：公交、地铁、有轨电车（tram）、火车和自行车。在路上行走时，需要特意留意人行道和自行车道。当地有些人骑自行车比较快，走在路上时，时不时会有自行车从你身旁呼啸而过。&lt;/p>
 &lt;p>在阿姆斯特丹的几天里，拜访了一个在 &lt;a href="http://www.booking.com/">booking.com&lt;/a> 工作的朋友，参观了公司的工作环境。谈话中，聊起了当地和国内北上广一些大城市的区别，深觉很多事都是围城。用一句习语形容很贴切：&lt;code>You win some, you lose some&lt;/code>。但其实什么事不是这样呢？&lt;/p>
-&lt;figure>&lt;img src="http://example.org/days-in-amsterdam/booking-lunch.jpg"
+&lt;figure>&lt;img src="https://ctliu3.github.io/days-in-amsterdam/booking-lunch.jpg"
 alt="booking 的午餐，种类繁多" width="600" height="400"/>&lt;figcaption>
 &lt;p>booking 的午餐，种类繁多&lt;/p>
 &lt;/figcaption>
 &lt;/figure>
 &lt;p>我在我的 &lt;a href="https://www.instagram.com/ct.liu/">instagram&lt;/a> 主页上加了所去过国家的国旗，这让我觉得很有意思，但更多的国旗却不是一个目标。我很喜欢日本，也很喜欢阿姆斯特丹，但不觉得到异地的游玩应该是种常态。有些事偶尔为之才有它的色彩，生活，总能找到其它平凡的点缀。当然，什么时候当我以人文为视角到处行走，就另当别论了。&lt;/p>
 &lt;h4 id="意外的插曲">意外的插曲&lt;/h4>
-&lt;p>本来应该是 16 号早上回北京，却因回程的航空公司（荷兰皇家航空公司，KLM）超售，导致最后某名地换了个航班，认识了 2 个同样遭遇的中国友人，途中转机时在土耳其机场呆了几个小时，也算是一个奇妙的经历了。&lt;/p>- http://example.org/posts/days-in-amsterdam/ -</description></item><item><title>日本之行</title><link>http://example.org/posts/japan-trip/</link><pubDate>Fri, 16 Sep 2016 18:20:31 +0000</pubDate><guid>http://example.org/posts/japan-trip/</guid><description>Space of ctliu3 http://example.org/posts/japan-trip/ -&lt;figure>&lt;img src="http://example.org/japan-trip/Ginza.JPG"
+&lt;p>本来应该是 16 号早上回北京，却因回程的航空公司（荷兰皇家航空公司，KLM）超售，导致最后某名地换了个航班，认识了 2 个同样遭遇的中国友人，途中转机时在土耳其机场呆了几个小时，也算是一个奇妙的经历了。&lt;/p>- https://ctliu3.github.io/posts/days-in-amsterdam/ -</description></item><item><title>日本之行</title><link>https://ctliu3.github.io/posts/japan-trip/</link><pubDate>Fri, 16 Sep 2016 18:20:31 +0000</pubDate><guid>https://ctliu3.github.io/posts/japan-trip/</guid><description>Space of ctliu3 https://ctliu3.github.io/posts/japan-trip/ -&lt;figure>&lt;img src="https://ctliu3.github.io/japan-trip/Ginza.JPG"
 alt="夜晚的银座"/>&lt;figcaption>
 &lt;p>夜晚的银座&lt;/p>
 &lt;/figcaption>
@@ -146,18 +146,18 @@ alt="夜晚的银座"/>&lt;figcaption>
 &lt;p>从生活的角度，不得不说日本人很讲究，或说，诗意。京都街头随处可见卖各种具有当地特色的生活饰品，但好些实用性都不强。日本的大部分店铺开得晚关得早。记得我有一天早上 9 点左右到秋叶原，而街上只有零星的行人，大部门的店面都是 10 点左右才陆陆续续开门。此外，无处不在的日本敬语可以让你感到岛国满满的温和气息。&lt;/p>
 &lt;h4 id="东京京都">东京、京都&lt;/h4>
 &lt;p>东京和京都是很不一样的地方。东京现代化气息很浓厚，而京都就显得古香古色。东京银座和北京三里屯很像，充斥着各种雄伟的建筑和奢华的品牌。这样的繁华之地该是会让一堆怀惴梦想的年轻人趋之若骛吧。去东京之前，秋叶原是我最想去的地方，毕竟这里的动漫文化浓烈。然而真正身临秋叶原时却没有那么强烈的感觉，这里的一部分元素能引起我的好奇心，但更多的感觉这里只是个购买手办、电子产品的地方。&lt;/p>
-&lt;figure>&lt;img src="http://example.org/japan-trip/Akihabara.JPG"
+&lt;figure>&lt;img src="https://ctliu3.github.io/japan-trip/Akihabara.JPG"
 alt="Akihabara"/>&lt;figcaption>
 &lt;p>Akihabara&lt;/p>
 &lt;/figcaption>
 &lt;/figure>
 &lt;p>相比东京，京都随处遍布着大大小小的寺庙，寺庙跟公园一样，是个让人感到放松的地方。心緒放空地漫步在寺庙或是街道上，是件很舒服的事。但由于不甚了解每个寺庙在日本历史长河中所扮演的角色，所以只能以观景为主。&lt;/p>
-&lt;figure>&lt;img src="http://example.org/japan-trip/Fushimi-Inari-Taisha.JPG"
+&lt;figure>&lt;img src="https://ctliu3.github.io/japan-trip/Fushimi-Inari-Taisha.JPG"
 alt="Fushimi-Inari-Taisha"/>&lt;figcaption>
 &lt;p>Fushimi-Inari-Taisha&lt;/p>
 &lt;/figcaption>
 &lt;/figure>
-&lt;p>更多的图片可以看我的 &lt;a href="https://www.instagram.com/ct.liu/">instagram&lt;/a>.&lt;/p>- http://example.org/posts/japan-trip/ -</description></item><item><title>Build a high performance image prediction service</title><link>http://example.org/posts/high-performance-image-prediction-service/</link><pubDate>Sun, 04 Sep 2016 22:36:00 +0000</pubDate><guid>http://example.org/posts/high-performance-image-prediction-service/</guid><description>Space of ctliu3 http://example.org/posts/high-performance-image-prediction-service/ -&lt;p>Deep learning is absolutely one of the keywords in these years. Like many other company, we use deep learning to solve some tasks, like image classification, OCR, face detection, etc. I’ve spent some time building the image classification service and done some optimizations during my work. I will share some of my experience in this article.&lt;/p>
+&lt;p>更多的图片可以看我的 &lt;a href="https://www.instagram.com/ct.liu/">instagram&lt;/a>.&lt;/p>- https://ctliu3.github.io/posts/japan-trip/ -</description></item><item><title>Build a high performance image prediction service</title><link>https://ctliu3.github.io/posts/high-performance-image-prediction-service/</link><pubDate>Sun, 04 Sep 2016 22:36:00 +0000</pubDate><guid>https://ctliu3.github.io/posts/high-performance-image-prediction-service/</guid><description>Space of ctliu3 https://ctliu3.github.io/posts/high-performance-image-prediction-service/ -&lt;p>Deep learning is absolutely one of the keywords in these years. Like many other company, we use deep learning to solve some tasks, like image classification, OCR, face detection, etc. I’ve spent some time building the image classification service and done some optimizations during my work. I will share some of my experience in this article.&lt;/p>
 &lt;h3 id="cpu-orgpu">CPU or GPU&lt;/h3>
 &lt;p>It really depends on a variety of factors, such as the request scale, power consumption, etc. GPU is expensive, but running the forward phase on the GPU device has dozens of times speed-up than CPU even you use OpenBLAS or MKL to accelerate the underlying matrix manipulation in CPU.&lt;/p>
 &lt;h3 id="prediction-modeldesign">Prediction Model design&lt;/h3>
@@ -177,7 +177,7 @@ alt="Fushimi-Inari-Taisha"/>&lt;figcaption>
 &lt;li>Rate limiting. The middleware can limit the number of request to fit the service limitation of prediction service.&lt;/li>
 &lt;/ul>
 &lt;p>Following figure a flexible and extensible architecture.&lt;/p>
-&lt;figure>&lt;img src="http://example.org/high-performance-image-prediction-service/prediction-flow.png"
+&lt;figure>&lt;img src="https://ctliu3.github.io/high-performance-image-prediction-service/prediction-flow.png"
 alt="prediction-flow"/>&lt;figcaption>
 &lt;p>prediction-flow&lt;/p>
 &lt;/figcaption>
@@ -185,7 +185,7 @@ alt="prediction-flow"/>&lt;figcaption>
 &lt;h3 id="image-decode-optimization">Image decode optimization&lt;/h3>
 &lt;p>Decode a 1080P image will cost ~30ms in CPU while running inference of GoogleNet V1 only cost ~10ms in GPU. Thus, decoding image may somehow become bottleneck. To solve this, It’s better to resize the image in front end. In addition, decoding image with in libjpeg-turbo library ~30% faster than libjpeg (I got this result but the official site claims that better performance can be achieved).&lt;/p>
 &lt;h3 id="conclusion">Conclusion&lt;/h3>
-&lt;p>The strategies above mentioned are not only suitable for image prediction service, but also for face recognition, face detection, etc.&lt;/p>- http://example.org/posts/high-performance-image-prediction-service/ -</description></item><item><title>Tips you should know about Caffe</title><link>http://example.org/posts/tips-you-should-know-about-caffe/</link><pubDate>Sat, 08 Aug 2015 16:49:18 +0000</pubDate><guid>http://example.org/posts/tips-you-should-know-about-caffe/</guid><description>Space of ctliu3 http://example.org/posts/tips-you-should-know-about-caffe/ -&lt;p>&lt;a href="https://github.com/BVLC/caffe">Caffe&lt;/a> is a wonderful deep learning (DL) framework, written in C++ and it is still under construction. I use Caffe to do some image related tasks these days. Technologically, I use Caffe just around one week, so I’m also a newbie. I encounter some “pits” when using Caffe. So I write down some tips, hope they are helpful to you.&lt;/p>
+&lt;p>The strategies above mentioned are not only suitable for image prediction service, but also for face recognition, face detection, etc.&lt;/p>- https://ctliu3.github.io/posts/high-performance-image-prediction-service/ -</description></item><item><title>Tips you should know about Caffe</title><link>https://ctliu3.github.io/posts/tips-you-should-know-about-caffe/</link><pubDate>Sat, 08 Aug 2015 16:49:18 +0000</pubDate><guid>https://ctliu3.github.io/posts/tips-you-should-know-about-caffe/</guid><description>Space of ctliu3 https://ctliu3.github.io/posts/tips-you-should-know-about-caffe/ -&lt;p>&lt;a href="https://github.com/BVLC/caffe">Caffe&lt;/a> is a wonderful deep learning (DL) framework, written in C++ and it is still under construction. I use Caffe to do some image related tasks these days. Technologically, I use Caffe just around one week, so I’m also a newbie. I encounter some “pits” when using Caffe. So I write down some tips, hope they are helpful to you.&lt;/p>
 &lt;h3 id="what-caffe-can-do">What Caffe can do?&lt;/h3>
 &lt;p>Caffe is actually a feature learning tool, you can do some specific tasks like classification, clustering, segmentation with the help of it. You can define the structure of the network to train the model of your own. Otherwise, some pre-trained models, including &lt;a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_googlenet">googlenet&lt;/a>, &lt;a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_reference_caffenet">caffenet&lt;/a>, are provided, they can be used directly.&lt;/p>
 &lt;h3 id="read-the-source-code">Read the source code&lt;/h3>
@@ -216,7 +216,7 @@ alt="prediction-flow"/>&lt;figcaption>
 &lt;/span>&lt;/span>&lt;span style="display:flex;">&lt;span> &lt;span style="color:#555">//&lt;/span> Your code&lt;span style="color:#555">.&lt;/span>
 &lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/div>&lt;h3 id="whats-more">What’s more&lt;/h3>
 &lt;p>During the usage of Caffe, you need to do lots of trivial work, like putting the data in certain directory, checking the output of each step is whether correct or not, or sometimes you need to visualize the output data in website in that you probably work on the remote machine, etc.
-In light of this, being familiar with &lt;a href="https://en.wikipedia.org/wiki/Bash_(Unix_shell)">bash/sh&lt;/a>, &lt;a href="https://www.python.org">python&lt;/a> or &lt;a href="https://www.ruby-lang.org/zh_cn/">ruby&lt;/a> will greatly improve your working efficiency. You can check my &lt;a href="https://gist.github.com/ctliu3/fc1148da3922cff09eb7">code snippet&lt;/a> in github for fast learning of bash.&lt;/p>- http://example.org/posts/tips-you-should-know-about-caffe/ -</description></item><item><title>NLP PA: Parsing</title><link>http://example.org/posts/nlp-pa-parsing/</link><pubDate>Fri, 05 Apr 2013 13:57:15 +0000</pubDate><guid>http://example.org/posts/nlp-pa-parsing/</guid><description>Space of ctliu3 http://example.org/posts/nlp-pa-parsing/ -&lt;p>本周的 PA 是对给定的句子求出相应的句法树（Parsing tree）。实际上，Parsing 经常也做为一些实际应用的预处理，比如机器翻译（Machine Translation, MT），因为不同语言的句子结构（如主谓宾）有很大的区别，通过句法分析得到句子的结构及单词词性，再根据不同语言本身的句法特点进行变换。&lt;/p>
+In light of this, being familiar with &lt;a href="https://en.wikipedia.org/wiki/Bash_(Unix_shell)">bash/sh&lt;/a>, &lt;a href="https://www.python.org">python&lt;/a> or &lt;a href="https://www.ruby-lang.org/zh_cn/">ruby&lt;/a> will greatly improve your working efficiency. You can check my &lt;a href="https://gist.github.com/ctliu3/fc1148da3922cff09eb7">code snippet&lt;/a> in github for fast learning of bash.&lt;/p>- https://ctliu3.github.io/posts/tips-you-should-know-about-caffe/ -</description></item><item><title>NLP PA: Parsing</title><link>https://ctliu3.github.io/posts/nlp-pa-parsing/</link><pubDate>Fri, 05 Apr 2013 13:57:15 +0000</pubDate><guid>https://ctliu3.github.io/posts/nlp-pa-parsing/</guid><description>Space of ctliu3 https://ctliu3.github.io/posts/nlp-pa-parsing/ -&lt;p>本周的 PA 是对给定的句子求出相应的句法树（Parsing tree）。实际上，Parsing 经常也做为一些实际应用的预处理，比如机器翻译（Machine Translation, MT），因为不同语言的句子结构（如主谓宾）有很大的区别，通过句法分析得到句子的结构及单词词性，再根据不同语言本身的句法特点进行变换。&lt;/p>
 &lt;p>在 NLP 中，词类标注（Part-of-speech Tagging, POS）也跟 Parsing 有关系。POS 可以作为 Parsing 的预处理，因为在我们通过 tagging 确定了每个词语的词性时，后续的 Parsing 规则就可以得到简化。不过由于 tagging 也会出现错误，所以加了效果不一定更好。&lt;/p>
 &lt;p>&lt;a href="http://www.cs.columbia.edu/~mcollins/courses/nlp2011/notes/pcfgs.pdf" title="PCFG">PCFG&lt;/a> 是一种基于统计、规则的求解 Parsing 的方法，当然该方法已经很早了，只能作为 baseline，不过现在很多的方法和模型还是以此为基础。设有元组&lt;/p>
 &lt;p>$$
@@ -255,7 +255,7 @@ $$&lt;/p>
 &lt;h3 id="weakness-of-pcfg">Weakness of PCFG&lt;/h3>
 &lt;p>作为一个教科书上的算法，PCGF 劣势 &amp;gt;=2：&lt;/p>
 &lt;p>1 没有充分利用句中单词带来的信息量。算法过程中只有在求解 $P(X \to X_i)$ 用到了单词的信息，而该信息没有作用到全局上。&lt;/p>
-&lt;p>2 没有充分利用句子的结构信息。同样的 rule，同样的 probability value，可能导致不同的 Parsing tree。&lt;/p>- http://example.org/posts/nlp-pa-parsing/ -</description></item><item><title>NLP PA: Hidden Markov Models</title><link>http://example.org/posts/nlp-pa-hidden-markov-models/</link><pubDate>Sun, 24 Mar 2013 13:27:49 +0000</pubDate><guid>http://example.org/posts/nlp-pa-hidden-markov-models/</guid><description>Space of ctliu3 http://example.org/posts/nlp-pa-hidden-markov-models/ -&lt;p>&lt;a href="https://class.coursera.org/nlangp-001/class/index" title="NLP">传送门&lt;/a>&lt;/p>
+&lt;p>2 没有充分利用句子的结构信息。同样的 rule，同样的 probability value，可能导致不同的 Parsing tree。&lt;/p>- https://ctliu3.github.io/posts/nlp-pa-parsing/ -</description></item><item><title>NLP PA: Hidden Markov Models</title><link>https://ctliu3.github.io/posts/nlp-pa-hidden-markov-models/</link><pubDate>Sun, 24 Mar 2013 13:27:49 +0000</pubDate><guid>https://ctliu3.github.io/posts/nlp-pa-hidden-markov-models/</guid><description>Space of ctliu3 https://ctliu3.github.io/posts/nlp-pa-hidden-markov-models/ -&lt;p>&lt;a href="https://class.coursera.org/nlangp-001/class/index" title="NLP">传送门&lt;/a>&lt;/p>
 &lt;p>HMM 是通过预测一连串的 $y_i$ 来得到模型 $p(x_1 \dots x_n, y_1 \dots y_n)$ 的概率最大值。本周的 Programming 主要是利用 HMM 来做针对句子的词性 tagger。&lt;/p>
 &lt;p>$$
 p(x_1 \dots x_n, y_1 \dots y_{n+1}) =
@@ -295,4 +295,4 @@ $$&lt;/p>
 &lt;/tr>
 &lt;/tbody>
 &lt;/table>
-&lt;p>除了 #Part 2 跟 Goal F1-Score 差 了0.00030，其他都一致。&lt;/p>- http://example.org/posts/nlp-pa-hidden-markov-models/ -</description></item></channel></rss>
+&lt;p>除了 #Part 2 跟 Goal F1-Score 差 了0.00030，其他都一致。&lt;/p>- https://ctliu3.github.io/posts/nlp-pa-hidden-markov-models/ -</description></item></channel></rss>
